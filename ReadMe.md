@@ -1,0 +1,1 @@
+Just Playing around stuff at Rice and pushing things here that aren't worth a repo by themselves.
