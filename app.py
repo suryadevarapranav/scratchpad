@@ -5,9 +5,11 @@ import json
 import numpy as np
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
-from flask import Flask, request, render_template
+from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, resources={r"/recommend": {"origins": "http://localhost:3000"}})
 
 # Initialize Spotipy client
 client_credentials_manager = SpotifyClientCredentials(client_id='d491d8d1fb704aecbfacf6df5d0b193e', client_secret='2a4a064cce9b4295982e3dfbdad3c89e')
@@ -73,15 +75,10 @@ def euclidean_distance(song1, song2, fields):
     return distance
 
 # Function to recommend similar songs based on specified fields or genre-specific fields
-def recommend_similar_songs(input_audio_features, fields_or_genre, data, num_recommendations=5):
+def recommend_similar_songs(input_audio_features, data, num_recommendations=30):
     distances = {}
 
-    if fields_or_genre.lower() == 'all':
-        fields = [field for field in input_audio_features.keys() if field not in excluded_fields]
-    elif fields_or_genre in genre_field_ranges:  # If the input is a genre
-        fields = list(set(genre_field_ranges[fields_or_genre].keys()) - set(excluded_fields))
-    else:  # If the input is a list of fields
-        fields = [field.strip() for field in fields_or_genre.split(",")]
+    fields = [field for field in input_audio_features.keys() if field not in excluded_fields]
 
     # Calculate distances between input song and all other songs based on specified fields
     for song_id, song_data in data.items():
@@ -104,8 +101,10 @@ def recommend():
     file_path = "data/audio_features.json"  # Path to your JSON file
     data = load_song_data(file_path)
 
-    input_song_name = request.form['song_name']
-    input_song_id = get_spotify_id(input_song_name)
+    input_data = request.get_json()
+    song_name = input_data['song_name']
+
+    input_song_id = get_spotify_id(song_name)
 
     if input_song_id is None:
         message = "Song not found. Please try again."
@@ -119,13 +118,17 @@ def recommend():
         message = "Failed to retrieve audio features of the input song."
         return render_template('index.html', message=message)
 
-    fields_or_genre = request.form['fields_or_genre']
-    num_recommendations = int(request.form['num_recommendations'])
+    num_recommendations = int(15)
 
-    recommendations = recommend_similar_songs(input_audio_features, fields_or_genre, data, num_recommendations)
+    recommendations = recommend_similar_songs(input_audio_features, data, num_recommendations)
     recommended_songs = [get_song_name(rec_id) for rec_id in recommendations]
 
-    return render_template('recommendations.html', recommended_songs=recommended_songs)
+    if not recommendations:
+        return jsonify({'error': 'No recommendations found'}), 404
+    
+    print(recommended_songs)
+
+    return jsonify({'recommended_songs': recommended_songs})
 
 if __name__ == "__main__":
     app.run(debug=True)
