@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spotify Recommendation System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Spotify Recommendation System</h1>
+
+    {% if message %}
+    <p>{{ message }}</p>
+    {% endif %}
+
+    <form action="/recommend" method="post">
+        <div class="form-group">
+            <label for="song_name">Song Name:</label>
+            <input type="text" id="song_name" name="song_name" required>
+        </div>
+
+        <p>Available fields: danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo</p>
+        <p>Available genres: EDM, Rock, Ambient, Folk, Rap, Classical, Pop, Live Performance, Disco, Blues</p>
+        <p>Enter Either one Genre or input fields as comma-separated values, All - to include all fields.</p>
+        <div class="form-group">
+            <label for="fields_or_genre">Fields or Genre:</label>
+            <input type="text" id="fields_or_genre" name="fields_or_genre" placeholder="Enter fields (comma-separated) or genre" required>
+        </div>
+
+        <div class="form-group">
+            <label for="num_recommendations">Number of Recommendations:</label>
+            <input type="number" id="num_recommendations" name="num_recommendations" min="1" value="5" required>
+        </div>
+
+        <button type="submit">Get Recommendations</button>
+    </form>
+</body>
+</html>
