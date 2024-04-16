@@ -18,20 +18,6 @@ sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 # Define excluded fields
 excluded_fields = ['type', 'id', 'uri', 'track_href', 'analysis_url', 'duration_ms', 'time_signature']
 
-# Define field ranges for each genre
-genre_field_ranges = {
-    "EDM": {"danceability": (0.75, 1.0), "energy": (0.75, 1.0), "tempo": (120, 200)},
-    "Rock": {"energy": (0.75, 1.0), "loudness": (-6, 0), "tempo": (120, 200)},
-    "Ambient": {"energy": (0.0, 0.3), "loudness": (-30, -10), "tempo": (60, 100)},
-    "Folk": {"acousticness": (0.75, 1.0), "energy": (0.0, 0.4), "loudness": (-30, -10)},
-    "Rap": {"speechiness": (0.33, 1.0), "energy": (0.0, 0.4), "loudness": (-30, -10)},
-    "Classical": {"instrumentalness": (0.75, 1.0), "speechiness": (0.0, 0.3)},
-    "Pop": {"valence": (0.75, 1.0), "energy": (0.0, 0.4), "loudness": (-30, -10)},
-    "Live Performance": {"liveness": (0.5, 1.0), "energy": (0.75, 1.0)},
-    "Disco": {"valence": (0.75, 1.0), "danceability": (0.75, 1.0), "tempo": (120, 200)},
-    "Blues": {"valence": (0.0, 0.4), "danceability": (0.0, 0.3), "tempo": (60, 100)}
-}
-
 # Function to load song data from JSON file
 def load_song_data(file_path):
     with open(file_path, 'r') as file:
@@ -113,7 +99,10 @@ def recommend():
     input_audio_features = get_audio_features(input_song_id)
 
     if input_audio_features:
-        pass
+        print(f"\nAudio Features of the Input Song '{song_name}':")
+        for field, value in input_audio_features.items():
+            if field not in excluded_fields:
+                print(f"{field}: {value}")
     else:
         message = "Failed to retrieve audio features of the input song."
         return render_template('index.html', message=message)
@@ -121,12 +110,24 @@ def recommend():
     num_recommendations = int(15)
 
     recommendations = recommend_similar_songs(input_audio_features, data, num_recommendations)
-    recommended_songs = [get_song_name(rec_id) for rec_id in recommendations]
+    recommended_songs = []
+
+    print(f"\nTop {num_recommendations} Recommended Songs:")
+    for rec_id in recommendations:
+        song_name = get_song_name(rec_id)
+        song_audio_features = get_audio_features(rec_id)
+        if song_audio_features:
+            print(f"\nRecommended Song: {song_name}")
+            for field, value in song_audio_features.items():
+                if field not in excluded_fields:
+                    print(f"{field}: {value}")
+        else:
+            print(f"\nRecommended Song: {song_name}")
+            print("Failed to retrieve audio features for this song.")
+        recommended_songs.append(song_name)
 
     if not recommendations:
         return jsonify({'error': 'No recommendations found'}), 404
-    
-    print(recommended_songs)
 
     return jsonify({'recommended_songs': recommended_songs})
 
