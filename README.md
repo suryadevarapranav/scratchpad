@@ -10,3 +10,4 @@ Just goofing around with stuff here at Rice. Pushing things that aren't worth a 
 Playing Around With Spotify API - February 7th. <br>
 Simple Rock Paper Scissors Game - March 3rd. <br>
 Fetching from an API using JavaScript - May 27th.
+Turtle Race using Python - June 2nd. <br>
